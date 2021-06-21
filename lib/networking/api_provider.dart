@@ -21,4 +21,19 @@ class APIProvider {
 
     return WeatherResponse.fromJson(jsonData);
   }
+
+  Future<Weather> fetchWeatherForDay(DateTime date) async {
+    final response = await http.get(
+      Uri.parse(_baseUrl +
+          "location/44418/${date.year.toString()}/${date.month.toString()}/${date.day.toString()}"),
+    );
+
+    assert(response.statusCode == HttpStatus.ok);
+    final jsonData = json.decode(response.body);
+
+    Weather weatherResponse =
+        jsonData.map((weather) => Weather.fromJson(weather));
+
+    return weatherResponse;
+  }
 }
