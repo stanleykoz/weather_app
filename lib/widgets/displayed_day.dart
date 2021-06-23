@@ -91,7 +91,7 @@ class DisplayedDay extends StatelessWidget {
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    "humidity: $humidity",
+                    "humidity: $humidity %",
                     style: Theme.of(context).textTheme.headline6,
                     textAlign: TextAlign.left,
                   ),
