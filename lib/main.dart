@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:weather_app/blocs/weather_bloc.dart';
 import 'package:weather_app/models/weather.dart';
 import 'package:weather_app/networking/api_provider.dart';
 import 'package:intl/intl.dart';
+import 'package:weather_app/widgets/displayed_day.dart';
+import 'package:weather_app/widgets/error_button.dart';
 import 'package:weather_app/widgets/horizontal_list.dart';
 
 void main() {
@@ -38,71 +41,87 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    weatherBloc.fetchWeather();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    weatherBloc.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(),
-      body: RefreshIndicator(
-        onRefresh: () {
-          return APIProvider.apiProvider.fetchWeatherFromServer();
-        },
-        child: FutureBuilder(
-          future: APIProvider.apiProvider.fetchWeatherFromServer(),
-          builder: (context, AsyncSnapshot<WeatherResponse> snapshot) {
-            if (snapshot.hasData) {
-              return Column(
-                children: [
-                  Expanded(
-                    flex: 1,
-                    child: Center(
-                      child: Text(
-                        snapshot.data.title,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.headline4,
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    flex: 7,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(15),
-                          border: Border.all(
-                            color: Colors.black,
-                            width: 2,
+      body: StreamBuilder(
+        stream: weatherBloc.allWeather,
+        builder: (context, AsyncSnapshot<WeatherResponse> snapshot) {
+          print(snapshot.connectionState);
+          if (snapshot.hasData) {
+            return RefreshIndicator(
+              onRefresh: () {
+                return weatherBloc.fetchWeather();
+              },
+              child: SingleChildScrollView(
+                physics: AlwaysScrollableScrollPhysics(),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        flex: 1,
+                        child: Center(
+                          child: Text(
+                            snapshot.data.title,
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.headline4,
                           ),
                         ),
-                        child: Column(
-                          children: [
-                            Text(
-                              snapshot
-                                  .data.wheatherList[currentlySelected].name,
-                            ),
-                            Image.network(
-                                "https://www.metaweather.com/static/img/weather/png/${snapshot.data.wheatherList[currentlySelected].image}.png"),
-                            Text(
-                              snapshot.data.wheatherList[currentlySelected]
-                                  .currentTemp,
-                            ),
-                          ],
+                      ),
+                      Expanded(
+                        flex: 7,
+                        child: DisplayedDay(
+                          name: snapshot
+                              .data.wheatherList[currentlySelected].name,
+                          image: snapshot
+                              .data.wheatherList[currentlySelected].image,
+                          temp: snapshot
+                              .data.wheatherList[currentlySelected].currentTemp,
+                          day: DateFormat('EEEE').format(snapshot
+                              .data.wheatherList[currentlySelected].date),
+                          humidity: snapshot
+                              .data.wheatherList[currentlySelected].humidity,
+                          pressure: snapshot
+                              .data.wheatherList[currentlySelected].pressure,
+                          wind: snapshot
+                              .data.wheatherList[currentlySelected].wind,
                         ),
                       ),
-                    ),
+                      Expanded(
+                          flex: 2,
+                          child: HorizontalList(
+                            weatherList: snapshot.data.wheatherList,
+                            selectItem: _selectItem,
+                          )),
+                    ],
                   ),
-                  Expanded(
-                      flex: 2,
-                      child: HorizontalList(
-                        weatherList: snapshot.data.wheatherList,
-                        selectItem: _selectItem,
-                      )),
-                ],
-              );
-            } else
-              return CircularProgressIndicator();
-          },
-        ),
+                ),
+              ),
+            );
+          } else if (snapshot.hasError) {
+            return Center(
+              child: ErrorButton(),
+            );
+          } else {
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+        },
       ),
     );
   }

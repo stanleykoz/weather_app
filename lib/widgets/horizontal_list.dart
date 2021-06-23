@@ -42,19 +42,33 @@ class _HorizontalListState extends State<HorizontalList> {
                       currentlySelected == index ? Colors.green : Colors.black,
                 ),
               ),
-              height: 80,
-              width: 80,
+              height: 60,
+              width: 100,
               child: Column(
                 children: [
-                  Text(
-                    DateFormat('EEEE').format(widget.weatherList[index].date),
-                    textAlign: TextAlign.center,
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(2.0),
+                      child: Text(
+                        DateFormat('EEEE')
+                            .format(widget.weatherList[index].date),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                   ),
-                  Image.network(
-                      "https://www.metaweather.com/static/img/weather/png/${widget.weatherList[index].image}.png"),
-                  Text(
-                    "${widget.weatherList[index].minTemp.substring(0, 4)}/${widget.weatherList[index].maxTemp.substring(0, 4)}",
-                    textAlign: TextAlign.center,
+                  Expanded(
+                    flex: 2,
+                    child: Image.network(
+                        "https://www.metaweather.com/static/img/weather/png/${widget.weatherList[index].image}.png"),
+                  ),
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(2.0),
+                      child: Text(
+                        "${widget.weatherList[index].minTemp.substring(0, 4)}/${widget.weatherList[index].maxTemp.substring(0, 4)} °C",
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
                   )
                 ],
               ),
